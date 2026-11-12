@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explore o mundo Pokémon com sua própria Pokédex.">
+  <title>Pokédex | Explore o mundo Pokémon</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <div class="logo">POKÉDEX</div>
+      <h1>Explore o mundo Pokémon!</h1>
+      <p>Encontre informações sobre seus Pokémon favoritos.</p>
+    </header>
+
+    <section class="pesquisa">
+      <input
+        type="text"
+        id="termo"
+        placeholder="Digite o nome ou número..."
+        autocomplete="off"
+        maxlength="40"
+      >
+      <button id="buscar">Buscar</button>
+    </section>
+
+    <div class="acoes">
+      <button id="aleatorio" class="botao-secundario">
+        Pokémon aleatório
+      </button>
+    </div>
+
+    <p id="mensagem" role="status" aria-live="polite"></p>
+
+    <section id="resultado" class="resultado" aria-live="polite" hidden>
+      <span id="numero" class="numero"></span>
+      <h2 id="nome"></h2>
+      <img id="imagem" alt="" hidden>
+      <div id="tipos" class="tipos"></div>
+      <button id="favoritar" class="botao-favorito">
+        ☆ Adicionar aos favoritos
+      </button>
+    </section>
+
+    <section class="secao-favoritos">
+      <h2>⭐ Meus favoritos</h2>
+      <p class="subtitulo">Seus Pokémon salvos aparecem aqui.</p>
+      <div id="lista-favoritos" class="lista-favoritos">
+        <p class="vazio">Você ainda não tem favoritos.</p>
+      </div>
+    </section>
+
+    <footer>
+      <p>Pokédex desenvolvida com TypeScript, Node.js e PokéAPI.</p>
+    </footer>
+  </main>
+</body>
+</html>
