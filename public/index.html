@@ -4,77 +4,226 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Explore e descubra seus Pokémon favoritos.">
-  <title>Pokédex | Mundo Pokémon</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="app.js" defer></script>
+  <meta name="theme-color" content="#263b50">
+  <meta name="description" content="Explore o mundo Pokémon com uma Pokédex interativa.">
+  <title>Pokédex | Explore o mundo Pokémon</title>
+
+  <!-- Conexão com CSS -->
+  <link rel="stylesheet" href="/style.css">
+
+  <!-- JavaScript -->
+  <script src="/app.js" defer></script>
 </head>
+
 <body>
-  <header class="topo">
-    <a href="#" class="marca">POKÉDEX</a>
-    <span>Explore o mundo Pokémon</span>
+
+  <header>
+    <div>
+      <h1>Pokédex</h1>
+      <p>Explore o universo Pokémon</p>
+    </div>
   </header>
 
-  <main class="container">
-    <section class="apresentacao">
+  <main>
+
+    <!-- APRESENTAÇÃO -->
+    <section class="hero">
       <p class="etiqueta">SEU GUIA POKÉMON</p>
-      <h1>Encontre seu próximo Pokémon favorito.</h1>
-      <p>Pesquise, explore e conheça diferentes espécies do universo Pokémon.</p>
+      <h2>Descubra seu próximo Pokémon!</h2>
+      <p>
+        Pesquise, explore informações, descubra habilidades
+        e compare seus Pokémon favoritos.
+      </p>
     </section>
 
+    <!-- PESQUISA -->
     <section class="pesquisa">
-      <input
-        type="text"
-        id="termo"
-        placeholder="Pesquise por nome ou número..."
-        maxlength="40"
-        autocomplete="off"
-      >
-      <button id="buscar">Pesquisar</button>
-    </section>
-
-    <p id="mensagem" role="status" aria-live="polite"></p>
-
-    <section id="resultado" class="detalhe" hidden aria-live="polite">
-      <div class="detalhe-imagem">
-        <img id="imagem" alt="">
-      </div>
-
-      <div class="detalhe-conteudo">
-        <span id="numero" class="numero"></span>
-        <h2 id="nome"></h2>
-        <p class="legenda">Tipo do Pokémon</p>
-        <div id="tipos" class="tipos"></div>
-
-        <button id="favoritar" class="botao-favorito">
-          ☆ Adicionar aos favoritos
-        </button>
-      </div>
-    </section>
-
-    <section class="catalogo">
       <div class="titulo-secao">
         <div>
-          <p class="etiqueta">DESCUBRA NOVAS ESPÉCIES</p>
-          <h2>Catálogo Pokémon</h2>
+          <p class="etiqueta">PESQUISA</p>
+          <h2>Encontre um Pokémon</h2>
+        </div>
+      </div>
+
+      <div class="busca">
+        <input
+          id="busca"
+          type="text"
+          placeholder="Digite o nome ou número do Pokémon..."
+          maxlength="40"
+          autocomplete="off"
+        >
+        <button id="botao-buscar" type="button">Pesquisar</button>
+      </div>
+
+      <p id="mensagem" role="status" aria-live="polite"></p>
+
+      <div id="resultado" class="resultado" hidden>
+        <div class="pokemon-card">
+          <img id="imagem" src="" alt="Imagem do Pokémon">
+
+          <p id="numero" class="numero"></p>
+          <h2 id="nome"></h2>
+
+          <div id="tipos" class="tipos"></div>
+
+          <button id="favoritar" type="button">
+            Adicionar aos favoritos
+          </button>
+
+          <button id="ver-detalhes" type="button">
+            Ver ficha completa
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- FICHA COMPLETA -->
+    <section id="ficha-completa" class="ficha-completa" hidden>
+      <div class="titulo-secao">
+        <div>
+          <p class="etiqueta">INFORMAÇÕES</p>
+          <h2>Ficha completa</h2>
         </div>
 
-        <span id="contador" class="contador">Carregando...</span>
+        <button id="fechar-detalhes" class="botao-fechar" type="button">
+          Fechar
+        </button>
+      </div>
+
+      <div class="informacoes-basicas">
+        <div class="informacao">
+          <span>Altura</span>
+          <strong id="altura">-</strong>
+        </div>
+
+        <div class="informacao">
+          <span>Peso</span>
+          <strong id="peso">-</strong>
+        </div>
+
+        <div class="informacao">
+          <span>Experiência base</span>
+          <strong id="experiencia">-</strong>
+        </div>
+      </div>
+
+      <div class="bloco-ficha">
+        <h3>Habilidades</h3>
+        <div id="habilidades" class="habilidades"></div>
+      </div>
+
+      <div class="bloco-ficha">
+        <h3>Atributos</h3>
+        <div id="atributos" class="atributos"></div>
+      </div>
+    </section>
+
+    <!-- COMPARADOR POKÉMON -->
+    <section class="comparador">
+
+      <div class="titulo-secao">
+        <div>
+          <p class="etiqueta">BATALHA DE ATRIBUTOS</p>
+          <h2>Comparador Pokémon</h2>
+          <p class="descricao-comparador">
+            Escolha dois Pokémon e compare suas características.
+          </p>
+        </div>
+      </div>
+
+      <div class="campos-comparacao">
+
+        <div class="campo-comparacao">
+          <label for="pokemon-a">Primeiro Pokémon</label>
+          <input
+            id="pokemon-a"
+            type="text"
+            placeholder="Ex.: pikachu"
+            maxlength="40"
+          >
+        </div>
+
+        <div class="versus">VS</div>
+
+        <div class="campo-comparacao">
+          <label for="pokemon-b">Segundo Pokémon</label>
+          <input
+            id="pokemon-b"
+            type="text"
+            placeholder="Ex.: charizard"
+            maxlength="40"
+          >
+        </div>
+
+      </div>
+
+      <button id="comparar" class="botao-comparar" type="button">
+        Comparar Pokémon
+      </button>
+
+      <p
+        id="mensagem-comparacao"
+        role="status"
+        aria-live="polite"
+      ></p>
+
+      <div id="resultado-comparacao" hidden>
+
+        <div class="pokemon-comparado">
+
+          <div class="comparado-card">
+            <img id="imagem-a" alt="">
+            <span id="numero-a"></span>
+            <h3 id="nome-a"></h3>
+            <div id="tipos-a" class="tipos"></div>
+          </div>
+
+          <div class="comparado-card">
+            <img id="imagem-b" alt="">
+            <span id="numero-b"></span>
+            <h3 id="nome-b"></h3>
+            <div id="tipos-b" class="tipos"></div>
+          </div>
+
+        </div>
+
+        <h3 class="titulo-atributos">
+          Comparação de atributos
+        </h3>
+
+        <div id="barras-comparacao"></div>
+
+        <div
+          id="resumo-comparacao"
+          class="resumo-comparacao"
+        ></div>
+
+      </div>
+    </section>
+
+    <!-- CATÁLOGO -->
+    <section class="catalogo">
+
+      <div class="titulo-secao">
+        <div>
+          <p class="etiqueta">EXPLORE</p>
+          <h2>Catálogo Pokémon</h2>
+        </div>
       </div>
 
       <div class="filtros">
-        <label for="filtro-tipo">Filtrar por tipo:</label>
         <select id="filtro-tipo">
           <option value="">Todos os tipos</option>
           <option value="normal">Normal</option>
           <option value="fire">Fogo</option>
           <option value="water">Água</option>
-          <option value="electric">Elétrico</option>
           <option value="grass">Planta</option>
+          <option value="electric">Elétrico</option>
           <option value="ice">Gelo</option>
           <option value="fighting">Lutador</option>
           <option value="poison">Veneno</option>
-          <option value="ground">Terra</option>
+          <option value="ground">Terrestre</option>
           <option value="flying">Voador</option>
           <option value="psychic">Psíquico</option>
           <option value="bug">Inseto</option>
@@ -87,33 +236,37 @@
         </select>
       </div>
 
-      <div id="lista-pokemons" class="grade-pokemons">
-        <p class="vazio">Carregando Pokémon...</p>
+      <div id="lista-pokemons"></div>
+
+      <div class="paginacao">
+        <button id="anterior" type="button">Anterior</button>
+        <span id="pagina">Página 1</span>
+        <button id="proximo" type="button">Próximo</button>
       </div>
 
-      <nav class="paginacao" aria-label="Navegação do catálogo">
-        <button id="anterior" disabled>← Anterior</button>
-        <span id="pagina">Página 1</span>
-        <button id="proximo">Próxima →</button>
-      </nav>
+      <p id="contador"></p>
+
     </section>
 
-    <section class="secao-favoritos">
+    <!-- FAVORITOS -->
+    <section class="favoritos">
+
       <div class="titulo-secao">
         <div>
           <p class="etiqueta">SUA COLEÇÃO</p>
-          <h2>Meus favoritos ⭐</h2>
+          <h2>Pokémon favoritos</h2>
         </div>
       </div>
 
-      <div id="lista-favoritos" class="grade-favoritos">
-        <p class="vazio">Você ainda não tem favoritos.</p>
-      </div>
+      <div id="lista-favoritos"></div>
+
     </section>
+
   </main>
 
   <footer>
-    <p>Projeto desenvolvido com TypeScript, Node.js, Express e PokéAPI.</p>
+    <p>Pokédex — Projeto desenvolvido com TypeScript e PokéAPI.</p>
   </footer>
+
 </body>
 </html>

@@ -368,3 +368,314 @@ filtroTipo.addEventListener('change', renderizarCatalogo);
 
 renderizarFavoritos();
 carregarCatalogo();
+
+const botaoVerDetalhes = document.getElementById('ver-detalhes');
+const botaoFecharDetalhes = document.getElementById('fechar-detalhes');
+
+const fichaCompleta = document.getElementById('ficha-completa');
+const alturaPokemon = document.getElementById('altura');
+const pesoPokemon = document.getElementById('peso');
+const experienciaPokemon = document.getElementById('experiencia');
+const habilidadesPokemon = document.getElementById('habilidades');
+const atributosPokemon = document.getElementById('atributos');
+
+const nomesAtributos = {
+  hp: 'Vida',
+  attack: 'Ataque',
+  defense: 'Defesa',
+  'special-attack': 'Ataque especial',
+  'special-defense': 'Defesa especial',
+  speed: 'Velocidade'
+};
+
+async function carregarDetalhes() {
+  if (!pokemonAtual) {
+    mostrarMensagem('Selecione um Pokémon primeiro.', true);
+    return;
+  }
+
+  const identificador = pokemonAtual.numero;
+
+  botaoVerDetalhes.disabled = true;
+  botaoVerDetalhes.textContent = 'Carregando ficha...';
+
+  fichaCompleta.hidden = false;
+  fichaCompleta.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+
+  habilidadesPokemon.textContent = 'Carregando...';
+  atributosPokemon.textContent = 'Carregando...';
+
+  try {
+    const resposta = await fetch(
+      `/api/pokemons/${identificador}/detalhes`
+    );
+
+    const dados = await resposta.json();
+
+    if (!resposta.ok) {
+      throw new Error(dados.erro || 'Não foi possível carregar os detalhes.');
+    }
+
+    // Medidas da PokéAPI: altura em decímetros e peso em hectogramas.
+    alturaPokemon.textContent = `${(dados.altura / 10).toFixed(1)} m`;
+    pesoPokemon.textContent = `${(dados.peso / 10).toFixed(1)} kg`;
+
+    experienciaPokemon.textContent =
+      dados.experiencia ?? 'Não disponível';
+
+    habilidadesPokemon.replaceChildren();
+
+    dados.habilidades.forEach((habilidade) => {
+      const etiqueta = document.createElement('span');
+      etiqueta.className = 'habilidade';
+      etiqueta.textContent = habilidade.replaceAll('-', ' ');
+      habilidadesPokemon.appendChild(etiqueta);
+    });
+
+    atributosPokemon.replaceChildren();
+
+    dados.atributos.forEach((atributo) => {
+      const linha = document.createElement('div');
+      linha.className = 'linha-atributo';
+
+      const nome = document.createElement('span');
+      nome.className = 'nome-atributo';
+      nome.textContent =
+        nomesAtributos[atributo.nome] || atributo.nome;
+
+      const fundo = document.createElement('div');
+      fundo.className = 'fundo-barra';
+
+      const barra = document.createElement('div');
+      barra.className = 'barra-atributo';
+
+      const porcentagem = Math.min(
+        (atributo.valor / 255) * 100,
+        100
+      );
+
+      barra.style.width = `${porcentagem}%`;
+
+      fundo.appendChild(barra);
+
+      const valor = document.createElement('span');
+      valor.className = 'valor-atributo';
+      valor.textContent = atributo.valor;
+
+      linha.append(nome, fundo, valor);
+      atributosPokemon.appendChild(linha);
+    });
+
+    mostrarMensagem(`Ficha de ${dados.nome} carregada!`);
+  } catch (erro) {
+    fichaCompleta.hidden = true;
+    mostrarMensagem(erro.message, true);
+  } finally {
+    botaoVerDetalhes.disabled = false;
+    botaoVerDetalhes.textContent = 'Ver ficha completa';
+  }
+}
+
+botaoVerDetalhes.addEventListener('click', carregarDetalhes);
+
+botaoFecharDetalhes.addEventListener('click', () => {
+  fichaCompleta.hidden = true;
+});
+
+const campoPokemonA = document.getElementById('pokemon-a');
+const campoPokemonB = document.getElementById('pokemon-b');
+const botaoComparar = document.getElementById('comparar');
+
+const mensagemComparacao = document.getElementById('mensagem-comparacao');
+const resultadoComparacao = document.getElementById('resultado-comparacao');
+const barrasComparacao = document.getElementById('barras-comparacao');
+const resumoComparacao = document.getElementById('resumo-comparacao');
+
+const nomesComparacao = {
+  hp: 'Vida',
+  attack: 'Ataque',
+  defense: 'Defesa',
+  'special-attack': 'Ataque especial',
+  'special-defense': 'Defesa especial',
+  speed: 'Velocidade'
+};
+
+async function obterPokemonComparacao(termo) {
+  const resposta = await fetch(
+    `/api/pokemons/${encodeURIComponent(termo)}/detalhes`
+  );
+
+  const dados = await resposta.json();
+
+  if (!resposta.ok) {
+    throw new Error(dados.erro || `Não foi possível encontrar ${termo}.`);
+  }
+
+  return dados;
+}
+
+function mostrarPokemonComparado(pokemon, sufixo) {
+  document.getElementById(`imagem-${sufixo}`).src = pokemon.imagem || '';
+  document.getElementById(`imagem-${sufixo}`).alt =
+    `Imagem de ${pokemon.nome}`;
+
+  document.getElementById(`nome-${sufixo}`).textContent = pokemon.nome;
+  document.getElementById(`numero-${sufixo}`).textContent =
+    `#${String(pokemon.numero).padStart(3, '0')}`;
+
+  const areaTipos = document.getElementById(`tipos-${sufixo}`);
+  areaTipos.replaceChildren(...criarTipos(pokemon.tipos).childNodes);
+}
+
+function obterAtributo(pokemon, nome) {
+  return pokemon.atributos.find(
+    (atributo) => atributo.nome === nome
+  )?.valor ?? 0;
+}
+
+function criarLinhaComparacao(nome, valorA, valorB) {
+  const linha = document.createElement('div');
+  linha.className = 'linha-comparacao';
+
+  const titulo = document.createElement('p');
+  titulo.className = 'nome-comparacao';
+  titulo.textContent = nomesComparacao[nome] || nome;
+
+  const barras = document.createElement('div');
+  barras.className = 'barras-duplas';
+
+  const ladoA = document.createElement('div');
+  ladoA.className = 'barra-lado primeiro';
+
+  const numeroA = document.createElement('strong');
+  numeroA.textContent = valorA;
+
+  const fundoA = document.createElement('div');
+  fundoA.className = 'fundo-barra';
+
+  const barraA = document.createElement('div');
+  barraA.className = 'barra-atributo';
+  barraA.style.width = `${Math.min(valorA / 255 * 100, 100)}%`;
+
+  fundoA.appendChild(barraA);
+  ladoA.append(numeroA, fundoA);
+
+  const ladoB = document.createElement('div');
+  ladoB.className = 'barra-lado segundo';
+
+  const fundoB = document.createElement('div');
+  fundoB.className = 'fundo-barra';
+
+  const barraB = document.createElement('div');
+  barraB.className = 'barra-atributo';
+  barraB.style.width = `${Math.min(valorB / 255 * 100, 100)}%`;
+
+  fundoB.appendChild(barraB);
+
+  const numeroB = document.createElement('strong');
+  numeroB.textContent = valorB;
+
+  ladoB.append(fundoB, numeroB);
+
+  barras.append(ladoA, ladoB);
+  linha.append(titulo, barras);
+
+  return linha;
+}
+
+function calcularTotal(pokemon) {
+  return pokemon.atributos.reduce(
+    (total, atributo) => total + atributo.valor,
+    0
+  );
+}
+
+async function compararPokemons() {
+  const termoA = campoPokemonA.value.trim().toLowerCase();
+  const termoB = campoPokemonB.value.trim().toLowerCase();
+
+  if (!termoA || !termoB) {
+    mensagemComparacao.textContent =
+      'Preencha os dois campos para comparar.';
+    resultadoComparacao.hidden = true;
+    return;
+  }
+
+  if (termoA === termoB) {
+    mensagemComparacao.textContent =
+      'Escolha dois Pokémon diferentes.';
+    resultadoComparacao.hidden = true;
+    return;
+  }
+
+  botaoComparar.disabled = true;
+  botaoComparar.textContent = 'Comparando...';
+  mensagemComparacao.textContent = 'Buscando informações...';
+  resultadoComparacao.hidden = true;
+
+  try {
+    const [pokemonA, pokemonB] = await Promise.all([
+      obterPokemonComparacao(termoA),
+      obterPokemonComparacao(termoB)
+    ]);
+
+    mostrarPokemonComparado(pokemonA, 'a');
+    mostrarPokemonComparado(pokemonB, 'b');
+
+    barrasComparacao.replaceChildren();
+
+    pokemonA.atributos.forEach((atributo) => {
+      const valorA = atributo.valor;
+      const valorB = obterAtributo(pokemonB, atributo.nome);
+
+      barrasComparacao.appendChild(
+        criarLinhaComparacao(atributo.nome, valorA, valorB)
+      );
+    });
+
+    const totalA = calcularTotal(pokemonA);
+    const totalB = calcularTotal(pokemonB);
+
+    let vencedor;
+
+    if (totalA > totalB) {
+      vencedor = pokemonA.nome;
+    } else if (totalB > totalA) {
+      vencedor = pokemonB.nome;
+    } else {
+      vencedor = 'Empate';
+    }
+
+    resumoComparacao.textContent =
+      `Total de atributos de ${pokemonA.nome}: ${totalA}. ` +
+      `Total de atributos de ${pokemonB.nome}: ${totalB}. ` +
+      `Maior total: ${vencedor}.`;
+
+    resultadoComparacao.hidden = false;
+    mensagemComparacao.textContent = 'Comparação concluída!';
+
+    resultadoComparacao.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  } catch (erro) {
+    mensagemComparacao.textContent = erro.message;
+  } finally {
+    botaoComparar.disabled = false;
+    botaoComparar.textContent = 'Comparar Pokémon';
+  }
+}
+
+botaoComparar.addEventListener('click', compararPokemons);
+
+campoPokemonA.addEventListener('keydown', (evento) => {
+  if (evento.key === 'Enter') compararPokemons();
+});
+
+campoPokemonB.addEventListener('keydown', (evento) => {
+  if (evento.key === 'Enter') compararPokemons();
+});
+

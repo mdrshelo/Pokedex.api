@@ -10,11 +10,42 @@ export interface Pokemon {
   imagem: string | null;
 }
 
+export interface AtributoPokemon {
+  nome: string;
+  valor: number;
+}
+
+export interface DetalhesPokemon extends Pokemon {
+  altura: number;
+  peso: number;
+  experiencia: number;
+  habilidades: string[];
+  atributos: AtributoPokemon[];
+}
+
 interface RespostaPokeApi {
   id: number;
   name: string;
+  height: number;
+  weight: number;
+  base_experience: number;
   types: { type: { name: string } }[];
-  sprites: { front_default: string | null };
+  abilities: {
+    ability: { name: string };
+    is_hidden: boolean;
+  }[];
+  stats: {
+    base_stat: number;
+    stat: { name: string };
+  }[];
+  sprites: {
+    front_default: string | null;
+    other?: {
+      'official-artwork'?: {
+        front_default: string | null;
+      };
+    };
+  };
 }
 
 interface RespostaLista {
@@ -30,6 +61,7 @@ export interface ResultadoLista {
 }
 
 const cache = new Map<string, Pokemon>();
+const cacheDetalhes = new Map<string, DetalhesPokemon>();
 
 export class ErroDaApi extends Error {
   constructor(public readonly status: number, mensagem: string) {
@@ -41,22 +73,10 @@ function normalizar(termo: string): string {
   const nome = termo.trim().toLowerCase();
 
   if (!NOME_VALIDO.test(nome)) {
-    throw new ErroDaApi(
-      400,
-      'Pesquisa inválida. Digite um nome ou número de Pokémon.'
-    );
+    throw new ErroDaApi(400, 'Pesquisa inválida.');
   }
 
   return nome;
-}
-
-function resumir(dados: RespostaPokeApi): Pokemon {
-  return {
-    numero: dados.id,
-    nome: dados.name,
-    tipos: dados.types.map((t) => t.type.name),
-    imagem: dados.sprites.front_default,
-  };
 }
 
 async function consultarApi(url: string): Promise<Response> {
@@ -70,6 +90,17 @@ async function consultarApi(url: string): Promise<Response> {
       'A PokéAPI não respondeu. Tente novamente em instantes.'
     );
   }
+}
+
+function resumir(dados: RespostaPokeApi): Pokemon {
+  return {
+    numero: dados.id,
+    nome: dados.name,
+    tipos: dados.types.map((t) => t.type.name),
+    imagem:
+      dados.sprites.other?.['official-artwork']?.front_default ??
+      dados.sprites.front_default,
+  };
 }
 
 export async function buscarPokemon(termo: string): Promise<Pokemon> {
@@ -95,6 +126,51 @@ export async function buscarPokemon(termo: string): Promise<Pokemon> {
   cache.set(String(pokemon.numero), pokemon);
 
   return pokemon;
+}
+
+export async function buscarDetalhesPokemon(
+  termo: string
+): Promise<DetalhesPokemon> {
+  const nome = normalizar(termo);
+
+  const guardado = cacheDetalhes.get(nome);
+  if (guardado) return guardado;
+
+  const resposta = await consultarApi(`${URL_BASE}/pokemon/${nome}`);
+
+  if (resposta.status === 404) {
+    throw new ErroDaApi(404, `Pokémon ${nome} não encontrado.`);
+  }
+
+  if (!resposta.ok) {
+    throw new ErroDaApi(503, 'Não foi possível carregar os detalhes.');
+  }
+
+  const dados = (await resposta.json()) as RespostaPokeApi;
+  const pokemon = resumir(dados);
+
+  const detalhes: DetalhesPokemon = {
+    ...pokemon,
+    altura: dados.height,
+    peso: dados.weight,
+    experiencia: dados.base_experience,
+    habilidades: dados.abilities.map((item) =>
+      item.is_hidden
+        ? `${item.ability.name} (oculta)`
+        : item.ability.name
+    ),
+    atributos: dados.stats.map((item) => ({
+      nome: item.stat.name,
+      valor: item.base_stat,
+    })),
+  };
+
+  cache.set(nome, pokemon);
+  cache.set(String(pokemon.numero), pokemon);
+  cacheDetalhes.set(nome, detalhes);
+  cacheDetalhes.set(String(pokemon.numero), detalhes);
+
+  return detalhes;
 }
 
 export async function listarPokemons(
