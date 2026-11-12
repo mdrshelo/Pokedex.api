@@ -17,6 +17,18 @@ interface RespostaPokeApi {
   sprites: { front_default: string | null };
 }
 
+interface RespostaLista {
+  count: number;
+  results: { name: string }[];
+}
+
+export interface ResultadoLista {
+  total: number;
+  limite: number;
+  offset: number;
+  resultados: Pokemon[];
+}
+
 const cache = new Map<string, Pokemon>();
 
 export class ErroDaApi extends Error {
@@ -31,7 +43,7 @@ function normalizar(termo: string): string {
   if (!NOME_VALIDO.test(nome)) {
     throw new ErroDaApi(
       400,
-      `Pokémon "${termo}" inválido: use o nome (ex.: pikachu) ou o número (ex.: 25)`
+      'Pesquisa inválida. Digite um nome ou número de Pokémon.'
     );
   }
 
@@ -47,42 +59,76 @@ function resumir(dados: RespostaPokeApi): Pokemon {
   };
 }
 
+async function consultarApi(url: string): Promise<Response> {
+  try {
+    return await fetch(url, {
+      signal: AbortSignal.timeout(TEMPO_LIMITE_MS),
+    });
+  } catch {
+    throw new ErroDaApi(
+      503,
+      'A PokéAPI não respondeu. Tente novamente em instantes.'
+    );
+  }
+}
+
 export async function buscarPokemon(termo: string): Promise<Pokemon> {
   const nome = normalizar(termo);
 
   const guardado = cache.get(nome);
   if (guardado) return guardado;
 
-  let resposta: Response;
-
-  try {
-    resposta = await fetch(`${URL_BASE}/pokemon/${nome}`, {
-      signal: AbortSignal.timeout(TEMPO_LIMITE_MS),
-    });
-  } catch {
-    throw new ErroDaApi(
-      503,
-      'A PokéAPI não respondeu. Tente de novo em instantes.'
-    );
-  }
+  const resposta = await consultarApi(`${URL_BASE}/pokemon/${nome}`);
 
   if (resposta.status === 404) {
-    throw new ErroDaApi(404, `Pokémon ${nome} não encontrado`);
+    throw new ErroDaApi(404, `Pokémon ${nome} não encontrado.`);
   }
 
   if (!resposta.ok) {
-    throw new ErroDaApi(
-      503,
-      'A PokéAPI está com problemas. Tente de novo em instantes.'
-    );
+    throw new ErroDaApi(503, 'A PokéAPI está temporariamente indisponível.');
   }
 
-  const pokemon = resumir(
-    (await resposta.json()) as RespostaPokeApi
-  );
+  const dados = (await resposta.json()) as RespostaPokeApi;
+  const pokemon = resumir(dados);
 
   cache.set(nome, pokemon);
   cache.set(String(pokemon.numero), pokemon);
 
   return pokemon;
+}
+
+export async function listarPokemons(
+  limite: number,
+  offset: number
+): Promise<ResultadoLista> {
+  if (
+    !Number.isInteger(limite) ||
+    limite < 1 ||
+    limite > 40 ||
+    !Number.isInteger(offset) ||
+    offset < 0
+  ) {
+    throw new ErroDaApi(400, 'Parâmetros de paginação inválidos.');
+  }
+
+  const resposta = await consultarApi(
+    `${URL_BASE}/pokemon?limit=${limite}&offset=${offset}`
+  );
+
+  if (!resposta.ok) {
+    throw new ErroDaApi(503, 'Não foi possível carregar o catálogo.');
+  }
+
+  const dados = (await resposta.json()) as RespostaLista;
+
+  const resultados = await Promise.all(
+    dados.results.map((pokemon) => buscarPokemon(pokemon.name))
+  );
+
+  return {
+    total: dados.count,
+    limite,
+    offset,
+    resultados,
+  };
 }

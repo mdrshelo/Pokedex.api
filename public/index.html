@@ -4,59 +4,116 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Explore o mundo Pokémon com sua própria Pokédex.">
-  <title>Pokédex | Explore o mundo Pokémon</title>
+  <meta name="description" content="Explore e descubra seus Pokémon favoritos.">
+  <title>Pokédex | Mundo Pokémon</title>
   <link rel="stylesheet" href="style.css">
   <script src="app.js" defer></script>
 </head>
 <body>
+  <header class="topo">
+    <a href="#" class="marca">POKÉDEX</a>
+    <span>Explore o mundo Pokémon</span>
+  </header>
+
   <main class="container">
-    <header>
-      <div class="logo">POKÉDEX</div>
-      <h1>Explore o mundo Pokémon!</h1>
-      <p>Encontre informações sobre seus Pokémon favoritos.</p>
-    </header>
+    <section class="apresentacao">
+      <p class="etiqueta">SEU GUIA POKÉMON</p>
+      <h1>Encontre seu próximo Pokémon favorito.</h1>
+      <p>Pesquise, explore e conheça diferentes espécies do universo Pokémon.</p>
+    </section>
 
     <section class="pesquisa">
       <input
         type="text"
         id="termo"
-        placeholder="Digite o nome ou número..."
-        autocomplete="off"
+        placeholder="Pesquise por nome ou número..."
         maxlength="40"
+        autocomplete="off"
       >
-      <button id="buscar">Buscar</button>
+      <button id="buscar">Pesquisar</button>
     </section>
-
-    <div class="acoes">
-      <button id="aleatorio" class="botao-secundario">
-        Pokémon aleatório
-      </button>
-    </div>
 
     <p id="mensagem" role="status" aria-live="polite"></p>
 
-    <section id="resultado" class="resultado" aria-live="polite" hidden>
-      <span id="numero" class="numero"></span>
-      <h2 id="nome"></h2>
-      <img id="imagem" alt="" hidden>
-      <div id="tipos" class="tipos"></div>
-      <button id="favoritar" class="botao-favorito">
-        ☆ Adicionar aos favoritos
-      </button>
-    </section>
+    <section id="resultado" class="detalhe" hidden aria-live="polite">
+      <div class="detalhe-imagem">
+        <img id="imagem" alt="">
+      </div>
 
-    <section class="secao-favoritos">
-      <h2>⭐ Meus favoritos</h2>
-      <p class="subtitulo">Seus Pokémon salvos aparecem aqui.</p>
-      <div id="lista-favoritos" class="lista-favoritos">
-        <p class="vazio">Você ainda não tem favoritos.</p>
+      <div class="detalhe-conteudo">
+        <span id="numero" class="numero"></span>
+        <h2 id="nome"></h2>
+        <p class="legenda">Tipo do Pokémon</p>
+        <div id="tipos" class="tipos"></div>
+
+        <button id="favoritar" class="botao-favorito">
+          ☆ Adicionar aos favoritos
+        </button>
       </div>
     </section>
 
-    <footer>
-      <p>Pokédex desenvolvida com TypeScript, Node.js e PokéAPI.</p>
-    </footer>
+    <section class="catalogo">
+      <div class="titulo-secao">
+        <div>
+          <p class="etiqueta">DESCUBRA NOVAS ESPÉCIES</p>
+          <h2>Catálogo Pokémon</h2>
+        </div>
+
+        <span id="contador" class="contador">Carregando...</span>
+      </div>
+
+      <div class="filtros">
+        <label for="filtro-tipo">Filtrar por tipo:</label>
+        <select id="filtro-tipo">
+          <option value="">Todos os tipos</option>
+          <option value="normal">Normal</option>
+          <option value="fire">Fogo</option>
+          <option value="water">Água</option>
+          <option value="electric">Elétrico</option>
+          <option value="grass">Planta</option>
+          <option value="ice">Gelo</option>
+          <option value="fighting">Lutador</option>
+          <option value="poison">Veneno</option>
+          <option value="ground">Terra</option>
+          <option value="flying">Voador</option>
+          <option value="psychic">Psíquico</option>
+          <option value="bug">Inseto</option>
+          <option value="rock">Pedra</option>
+          <option value="ghost">Fantasma</option>
+          <option value="dragon">Dragão</option>
+          <option value="dark">Sombrio</option>
+          <option value="steel">Aço</option>
+          <option value="fairy">Fada</option>
+        </select>
+      </div>
+
+      <div id="lista-pokemons" class="grade-pokemons">
+        <p class="vazio">Carregando Pokémon...</p>
+      </div>
+
+      <nav class="paginacao" aria-label="Navegação do catálogo">
+        <button id="anterior" disabled>← Anterior</button>
+        <span id="pagina">Página 1</span>
+        <button id="proximo">Próxima →</button>
+      </nav>
+    </section>
+
+    <section class="secao-favoritos">
+      <div class="titulo-secao">
+        <div>
+          <p class="etiqueta">SUA COLEÇÃO</p>
+          <h2>Meus favoritos ⭐</h2>
+        </div>
+      </div>
+
+      <div id="lista-favoritos" class="grade-favoritos">
+        <p class="vazio">Você ainda não tem favoritos.</p>
+      </div>
+    </section>
   </main>
+
+  <footer>
+    <p>Projeto desenvolvido com TypeScript, Node.js, Express e PokéAPI.</p>
+  </footer>
 </body>
 </html>

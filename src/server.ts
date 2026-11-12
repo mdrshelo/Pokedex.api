@@ -7,16 +7,29 @@ import express, {
   
   import path from 'node:path';
   
-  import { buscarPokemon, ErroDaApi } from './pokeApi.js';
+  import {
+    buscarPokemon,
+    listarPokemons,
+    ErroDaApi,
+  } from './pokeApi.js';
   
   const PORTA = Number(process.env.PORT ?? 3000);
   
   const app = express();
   
-  // Entrega os arquivos da página (HTML, CSS e JavaScript)
   app.use(express.static(path.join(import.meta.dirname, '..', 'public')));
   
-  // Rota para buscar um Pokémon
+  // Catálogo com paginação
+  app.get('/api/pokemons', async (req: Request, res: Response) => {
+    const limite = Number(req.query.limit ?? 20);
+    const offset = Number(req.query.offset ?? 0);
+  
+    const catalogo = await listarPokemons(limite, offset);
+  
+    res.status(200).json(catalogo);
+  });
+  
+  // Pesquisa de um Pokémon pelo nome ou número
   app.get(
     '/api/pokemons/:termo',
     async (req: Request<{ termo: string }>, res: Response) => {
@@ -26,14 +39,14 @@ import express, {
     }
   );
   
-  // Rota para endereços da API que não existem
+  // Rotas inexistentes da API
   app.use('/api', (req: Request, res: Response) => {
     res.status(404).json({
       erro: 'Rota não encontrada',
     });
   });
   
-  // Tratamento geral de erros
+  // Tratamento de erros
   app.use(
     (
       erro: unknown,
@@ -41,6 +54,11 @@ import express, {
       res: Response,
       next: NextFunction
     ) => {
+      if (res.headersSent) {
+        next(erro);
+        return;
+      }
+  
       if (erro instanceof ErroDaApi) {
         res.status(erro.status).json({
           erro: erro.message,
@@ -57,7 +75,6 @@ import express, {
     }
   );
   
-  // Inicia o servidor
   app.listen(PORTA, () => {
     console.log(`Pokédex em http://localhost:${PORTA}`);
   });
